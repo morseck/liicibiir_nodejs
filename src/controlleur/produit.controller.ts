@@ -5,7 +5,7 @@ import {Request, Response} from "express";
 export default {
 
     //afficher tous les produits
-    index: (req:Request, resp: Response)=>{
+    indexProduit: (req:Request, resp: Response)=>{
         Produit.find((err, conteneurs)=>{
             if (err)  resp.status(500).send(err);
             else  resp.send(conteneurs);
@@ -14,7 +14,7 @@ export default {
     ,
 
     //creer un produit
-    create: (req:Request, resp: Response)=>{
+    createProduit: (req:Request, resp: Response)=>{
         let produit = new Produit(req.body);
         produit.save(err=>{
             if(err) resp.status(500).send(err);
@@ -23,7 +23,7 @@ export default {
     },
 
     //Consulter un produit
-    show: (req: Request, resp: Response)=>{
+    showProduit: (req: Request, resp: Response)=>{
         Produit.findById(req.params.id, (err, produit)=>{
             if (err) resp.status(500).send(err);
             else resp.send(produit);
@@ -31,7 +31,7 @@ export default {
     },
 
     //Mettre à jour un produit
-    update: (req: Request, resp: Response)=>{
+    updateProduit: (req: Request, resp: Response)=>{
         Produit.findByIdAndUpdate(req.params.id,req.body, (err)=>{
             if (err) resp.status(500).send(err);
             else resp.send("produit mis à jour avec succes");
@@ -39,7 +39,7 @@ export default {
     },
 
     //Supprimer un produit
-    delete: (req: Request, resp: Response)=>{
+    deleteProduit: (req: Request, resp: Response)=>{
         Produit.findByIdAndDelete(req.params.id,(err)=>{
             if (err) resp.status(500).send(err);
             else resp.send("Produit supprimer avec succes");
