@@ -2,7 +2,6 @@ import mongoose from "mongoose";
 import mongoosePaginate from "mongoose-paginate";
 
 let conteneurSchema = new mongoose.Schema({
-    //title: {type: String},
     numero: {type: String, required:true, unique:true},
     taille: {type: Number},
     disponible: {type: Boolean, required: true, default: true},
