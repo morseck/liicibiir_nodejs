@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const produit_controller_1 = __importDefault(require("./controlleur/produit.controller"));
 const conteneur_controller_1 = __importDefault(require("./controlleur/conteneur.controller"));
+const conteneur_produit_controller_1 = __importDefault(require("./controlleur/conteneur_produit.controller"));
 //les constantes
 const produitRoutePrefix = "/produit";
 const conteneurRoutePrefix = "/conteneur";
@@ -34,5 +35,9 @@ exports.default = (() => {
     apiRouter.route("/pConteneur").get(conteneur_controller_1.default.pconteneur); //pagination des conteneur
     //Get http://127.0.0.1:8085/conteneurSearch?kw=sardine&page=1&size=2
     apiRouter.route("/conteneurSearch").get(conteneur_controller_1.default.conteneursearch); //rechercher un conteneur avec pagination
+    /**********************************  CONTENEURS_PRODUITS ROUTES  ********************************************************/
+    apiRouter.route('/conteneurproduit/').get(conteneur_produit_controller_1.default.indexConteneurProduit); //consulter tous les conteneurProduit
+    apiRouter.route('/conteneurproduit/').post(conteneur_produit_controller_1.default.createConteneurProduit); //Poster un conteneurProduit
+    apiRouter.route('/conteneurproduit/:numero').get(conteneur_produit_controller_1.default.showConteneurProduit); //Details dans un conteneur
     return apiRouter;
 })();

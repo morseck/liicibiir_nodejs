@@ -3,22 +3,27 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * Model ou collection qui decris les produit qui se trouve dans un conteneur
+ */
 const mongoose_1 = __importDefault(require("mongoose"));
 const mongoose_paginate_1 = __importDefault(require("mongoose-paginate"));
-const conteneur_model_1 = __importDefault(require("./conteneur.model"));
-const produit_model_1 = __importDefault(require("./produit.model"));
-let produitQuantiteModel = new mongoose_1.default.Schema({
-    produit: { type: produit_model_1.default },
-    quantite: { type: Number }
+/*
+let produitQuantiteModel = new mongoose.Schema({
+   produit: {type: produitModel},
+   quantite: {type: Number}
 });
-produitQuantiteModel.plugin(mongoose_paginate_1.default);
-let ProduitQuantiteModel = mongoose_1.default.model("ProduitQuantite", produitQuantiteModel);
+//produitQuantiteModel.plugin(mongoosePaginate);
+let ProduitQuantiteModel = mongoose.model("ProduitQuantite", produitQuantiteModel);
+*/
 let conteneurProduitSchema = new mongoose_1.default.Schema({
-    contenenur: { type: conteneur_model_1.default },
-    produit: { type: [ProduitQuantiteModel] },
+    /*contenenur: {type: conteneurModel},
+    produit: {type: [{produits: produitModel, quantite: Number}]},*/
+    conteneur: { type: { id: String, numero: String } },
+    produit: { type: [{ id: String, nom: String, quantite: Number }] },
     created_at: { type: Date, required: true, default: new Date() },
     disponible: { type: Boolean, required: true, default: true },
 });
 conteneurProduitSchema.plugin(mongoose_paginate_1.default);
-const ConteneurProduit = mongoose_1.default.model("Conteneur", conteneurProduitSchema);
+const ConteneurProduit = mongoose_1.default.model("ConteneurProduit", conteneurProduitSchema);
 exports.default = ConteneurProduit;

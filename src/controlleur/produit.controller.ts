@@ -2,6 +2,7 @@
 import Produit from "../modele/produit.model";
 import {Request, Response} from "express";
 
+
 export default {
 
     //afficher tous les produits

@@ -1,7 +1,9 @@
 import express from "express";
 import produitControlleur from './controlleur/produit.controller';
 import conteneurControlleur from './controlleur/conteneur.controller';
+import conteneurProduitControlleur from './controlleur/conteneur_produit.controller';
 import * as bodyParser from "body-parser";
+
 
 //les constantes
 const produitRoutePrefix:string = "/produit";
@@ -37,6 +39,10 @@ export default (()=>{
     //Get http://127.0.0.1:8085/conteneurSearch?kw=sardine&page=1&size=2
     apiRouter.route("/conteneurSearch").get(conteneurControlleur.conteneursearch);//rechercher un conteneur avec pagination
 
+    /**********************************  CONTENEURS_PRODUITS ROUTES  ********************************************************/
+    apiRouter.route('/conteneurproduit/').get(conteneurProduitControlleur.indexConteneurProduit);//consulter tous les conteneurProduit
+    apiRouter.route('/conteneurproduit/').post(conteneurProduitControlleur.createConteneurProduit);//Poster un conteneurProduit
+    apiRouter.route('/conteneurproduit/:numero').get(conteneurProduitControlleur.showConteneurProduit);//Details dans un conteneur
 
 
     return apiRouter;
