@@ -8,11 +8,11 @@ const produit_model_1 = __importDefault(require("../modele/produit.model"));
 exports.default = {
     //afficher tous les produits
     indexProduit: (req, resp) => {
-        produit_model_1.default.find((err, conteneurs) => {
+        produit_model_1.default.find((err, operarions) => {
             if (err)
                 resp.status(500).send(err);
             else
-                resp.send(conteneurs);
+                resp.send(operarions);
         });
     },
     //creer un produit

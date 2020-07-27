@@ -7,9 +7,9 @@ export default {
 
     //afficher tous les produits
     indexProduit: (req:Request, resp: Response)=>{
-        Produit.find((err, conteneurs)=>{
+        Produit.find((err, operarions)=>{
             if (err)  resp.status(500).send(err);
-            else  resp.send(conteneurs);
+            else  resp.send(operarions);
         });
     }
     ,
@@ -54,6 +54,7 @@ export default {
 
         let p:number = parseInt(page || '1');
         let size:number = parseInt(sizeTemp || '5');
+
         //resp.send("Conteneur");
         Produit.paginate({},{page: p, limit: size}, (err, result)=>{
             if (err) resp.status(500).send(err);

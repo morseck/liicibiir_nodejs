@@ -7,9 +7,11 @@ const express_1 = __importDefault(require("express"));
 const produit_controller_1 = __importDefault(require("./controlleur/produit.controller"));
 const conteneur_controller_1 = __importDefault(require("./controlleur/conteneur.controller"));
 const conteneur_produit_controller_1 = __importDefault(require("./controlleur/conteneur_produit.controller"));
+const operation_controller_1 = __importDefault(require("./controlleur/operation.controller"));
 //les constantes
 const produitRoutePrefix = "/produit";
 const conteneurRoutePrefix = "/conteneur";
+const operationRoutePrefix = "/operation";
 //const appTemp = express();
 //les middemwares
 //appTemp.use(bodyParser.json());
@@ -39,5 +41,17 @@ exports.default = (() => {
     apiRouter.route('/conteneurproduit/').get(conteneur_produit_controller_1.default.indexConteneurProduit); //consulter tous les conteneurProduit
     apiRouter.route('/conteneurproduit/').post(conteneur_produit_controller_1.default.createConteneurProduit); //Poster un conteneurProduit
     apiRouter.route('/conteneurproduit/:numero').get(conteneur_produit_controller_1.default.showConteneurProduit); //Details dans un conteneur
+    /**********************************  OPEREATIONS ROUTES  ********************************************************/
+    apiRouter.route(operationRoutePrefix).get(operation_controller_1.default.indexOperation); //Lister toutes les opérations
+    apiRouter.route(operationRoutePrefix + "/rentrante").get(operation_controller_1.default.indexOperationRentrante); //Lister toutes les opérations rentrantes
+    apiRouter.route(operationRoutePrefix + "/sortante").get(operation_controller_1.default.indexOperationSortante); //Lister toutes les opérations sortantes
+    apiRouter.route(operationRoutePrefix).post(operation_controller_1.default.createOperation); //Poster ou creer ou faire une operation
+    apiRouter.route(operationRoutePrefix + "/:id").get(operation_controller_1.default.showOperation); //consulter une opération
+    apiRouter.route(operationRoutePrefix + "/:id").put(operation_controller_1.default.updateOperation); //mettre à jour une opération
+    apiRouter.route(operationRoutePrefix + "/:id").delete(operation_controller_1.default.deleteOperation); // supprimer une operation
+    //Get http://127.0.0.1:8085/pOperation?page=1&size=2
+    apiRouter.route("/pOperation").get(operation_controller_1.default.pOperation); //Pagination des opération
+    //Get http://127.0.0.1:8085/operationSearch?kw=Date&page=1&size=2
+    apiRouter.route("/operationSearch").get(operation_controller_1.default.operationSearch); //recherche une operation selon la date avec une systeme de pagination
     return apiRouter;
 })();

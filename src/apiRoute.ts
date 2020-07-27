@@ -2,12 +2,14 @@ import express from "express";
 import produitControlleur from './controlleur/produit.controller';
 import conteneurControlleur from './controlleur/conteneur.controller';
 import conteneurProduitControlleur from './controlleur/conteneur_produit.controller';
+import operationControlleur from './controlleur/operation.controller';
 import * as bodyParser from "body-parser";
 
 
 //les constantes
 const produitRoutePrefix:string = "/produit";
 const conteneurRoutePrefix: string = "/conteneur";
+const operationRoutePrefix: string = "/operation";
 //const appTemp = express();
 
 //les middemwares
@@ -44,6 +46,18 @@ export default (()=>{
     apiRouter.route('/conteneurproduit/').post(conteneurProduitControlleur.createConteneurProduit);//Poster un conteneurProduit
     apiRouter.route('/conteneurproduit/:numero').get(conteneurProduitControlleur.showConteneurProduit);//Details dans un conteneur
 
+    /**********************************  OPEREATIONS ROUTES  ********************************************************/
+    apiRouter.route(operationRoutePrefix).get(operationControlleur.indexOperation); //Lister toutes les opérations
+    apiRouter.route(operationRoutePrefix+"/rentrante").get(operationControlleur.indexOperationRentrante); //Lister toutes les opérations rentrantes
+    apiRouter.route(operationRoutePrefix+"/sortante").get(operationControlleur.indexOperationSortante); //Lister toutes les opérations sortantes
+    apiRouter.route(operationRoutePrefix).post(operationControlleur.createOperation);//Poster ou creer ou faire une operation
+    apiRouter.route(operationRoutePrefix+"/:id").get(operationControlleur.showOperation);//consulter une opération
+    apiRouter.route(operationRoutePrefix+"/:id").put(operationControlleur.updateOperation); //mettre à jour une opération
+    apiRouter.route(operationRoutePrefix+"/:id").delete(operationControlleur.deleteOperation); // supprimer une operation
+    //Get http://127.0.0.1:8085/pOperation?page=1&size=2
+    apiRouter.route("/pOperation").get(operationControlleur.pOperation);//Pagination des opération
+    //Get http://127.0.0.1:8085/operationSearch?kw=Date&page=1&size=2
+    apiRouter.route("/operationSearch").get(operationControlleur.operationSearch);//recherche une operation selon la date avec une systeme de pagination
 
     return apiRouter;
 })();
