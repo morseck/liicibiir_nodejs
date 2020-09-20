@@ -9,17 +9,48 @@ export default {
     indexProduit: (req:Request, resp: Response)=>{
         Produit.find((err, operarions)=>{
             if (err)  resp.status(500).send(err);
-            else  resp.send(operarions);
+            else  resp.status(200).send(operarions);
         });
-    }
-    ,
+    },
+
+    //listes de nom de produit disponible
+    produitNomDisponible: (req:Request, resp: Response)=>{
+        Produit.find({disponible:true},{nom: 1},(err, operarions)=>{
+            if (err)  resp.status(500).send(err);
+            else resp.status(200).send(operarions);
+        });
+    },
+
+    //recuperer le nombre total d'operation
+    totalProduit: (req:Request, resp: Response)=>{
+        Produit.find({}, {_id: 1},(err, produit)=>{
+            if (err)  resp.status(500).send(err);
+            else resp.status(200).send(({"total": produit.length.toString()}));
+        });
+    },
+
+    //Regroupement des produit en fonction de leur disponibilite
+    goupeDisponibiliteProduit: (req: Request, resp: Response)=>{
+        Produit.aggregate([
+            {
+                $group: {
+                    _id: '$disponible',
+                    count: { $sum: 1 }
+                }
+            }
+        ]).exec((err, produit)=>{
+            if (err) resp.status(500).send(err)
+            else resp.status(200).send(produit)
+        });
+    },
+
 
     //creer un produit
     createProduit: (req:Request, resp: Response)=>{
         let produit = new Produit(req.body);
         produit.save(err=>{
             if(err) resp.status(500).send(err);
-            else resp.send(produit);
+            else resp.status(200).send(produit);
         })
     },
 
@@ -27,15 +58,15 @@ export default {
     showProduit: (req: Request, resp: Response)=>{
         Produit.findById(req.params.id, (err, produit)=>{
             if (err) resp.status(500).send(err);
-            else resp.send(produit);
+            else resp.status(200).send(produit);
         });
     },
 
     //Mettre à jour un produit
     updateProduit: (req: Request, resp: Response)=>{
-        Produit.findByIdAndUpdate(req.params.id,req.body, (err)=>{
+        Produit.findByIdAndUpdate(req.params.id,req.body, (err, produit)=>{
             if (err) resp.status(500).send(err);
-            else resp.send("produit mis à jour avec succes");
+            else resp.status(200).send(produit);
         });
     },
 
@@ -43,7 +74,7 @@ export default {
     deleteProduit: (req: Request, resp: Response)=>{
         Produit.findByIdAndDelete(req.params.id,(err)=>{
             if (err) resp.status(500).send(err);
-            else resp.send("Produit supprimer avec succes");
+            else resp.status(200).send("Produit supprimer avec succes");
         });
     },
 

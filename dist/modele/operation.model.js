@@ -15,7 +15,11 @@ let operationSchema = new mongoose_1.default.Schema({
                     type: {
                         numero: String,
                         produit: {
-                            type: [{ nom: String, quantite: Number }]
+                            type: [{
+                                    nom: String,
+                                    quantite: Number,
+                                    calibre: String
+                                }]
                         }
                     }
                 }

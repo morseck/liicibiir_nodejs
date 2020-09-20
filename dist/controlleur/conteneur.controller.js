@@ -10,7 +10,41 @@ exports.default = {
             if (err)
                 resp.status(500).send(err);
             else
-                resp.send(conteneurs);
+                resp.status(200).send(conteneurs);
+        });
+    },
+    //listes de numero des conteneurs disponibles
+    conteneurNumeroDisponible: (req, resp) => {
+        conteneur_model_1.default.find({ disponible: true }, { numero: 1 }, (err, operarions) => {
+            if (err)
+                resp.status(500).send(err);
+            else
+                resp.status(200).send(operarions);
+        });
+    },
+    //recuperer le nombre total d'operation
+    totalConteneur: (req, resp) => {
+        conteneur_model_1.default.find({}, { _id: 1 }, (err, conteneur) => {
+            if (err)
+                resp.status(500).send(err);
+            else
+                resp.status(200).send(({ "total": conteneur.length.toString() }));
+        });
+    },
+    //Regroupement des conteneur en fonction de leur disponibilite
+    goupeDisponibiliteConteneur: (req, resp) => {
+        conteneur_model_1.default.aggregate([
+            {
+                $group: {
+                    _id: '$disponible',
+                    count: { $sum: 1 }
+                }
+            }
+        ]).exec((err, conteneur) => {
+            if (err)
+                resp.status(500).send(err);
+            else
+                resp.status(200).send(conteneur);
         });
     },
     //creer un produit
@@ -20,7 +54,7 @@ exports.default = {
             if (err)
                 resp.status(500).send(err);
             else
-                resp.send(contenur);
+                resp.status(200).send(contenur);
         });
     },
     showConteneur: (req, resp) => {
@@ -28,15 +62,15 @@ exports.default = {
             if (err)
                 resp.status(500).send(err);
             else
-                resp.send(conteneur);
+                resp.status(200).send(conteneur);
         });
     },
     updateConteneur: (req, resp) => {
-        conteneur_model_1.default.findByIdAndUpdate(req.params.id, req.body, (err) => {
+        conteneur_model_1.default.findByIdAndUpdate(req.params.id, req.body, (err, conteneur) => {
             if (err)
                 resp.status(500).send(err);
             else
-                resp.send("Conteneur mis à jour avec succes");
+                resp.status(200).send(conteneur);
         });
     },
     deleteConteneur: (req, resp) => {
@@ -44,7 +78,7 @@ exports.default = {
             if (err)
                 resp.status(500).send(err);
             else
-                resp.send("Conteneur supprimer avec succes");
+                resp.status(200).send("Conteneur supprimer avec succes");
         });
     },
     pconteneur: (req, resp) => {
@@ -58,7 +92,7 @@ exports.default = {
             if (err)
                 resp.status(500).send(err);
             else
-                resp.send(result);
+                resp.status(200).send(result);
         });
     },
     conteneursearch: (req, resp) => {
@@ -74,7 +108,7 @@ exports.default = {
             if (err)
                 resp.status(500).send(err);
             else
-                resp.send(result);
+                resp.status(200).send(result);
         });
     }
 };

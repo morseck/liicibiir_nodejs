@@ -1,4 +1,4 @@
-//Les imports
+﻿//Les imports
 import express, {Request, Response} from "express";
 //import mongoose from "mongoose";
 //import Conteneur from "./modele/conteneur.model";
@@ -6,6 +6,7 @@ import express, {Request, Response} from "express";
 import * as bodyParser from "body-parser";
 import apiRouter from "./apiRoute";
 import dbMongo from "./configuration/config.db.mongo"
+import cors from 'cors';
 
 //Appel à la base de données
 dbMongo;
@@ -19,9 +20,12 @@ mongoose.connect(uri, (err)=>{
     else console.log("Base de donnée Mongo connectée avec succes");
 });
 */
-
+const corsOptions = {
+    origin: "*"
+};
 //Les middlewares
 app.use(bodyParser.json());
+app.use(cors());
 
 //ROUTES DE TOUS  LES APIS
 app.use('/api/', apiRouter);
@@ -31,6 +35,6 @@ app.get("/", (req, resp)=>{
 });
 
 app.listen(8085, ()=>{
-    console.log("serveur démaré");
+    console.log("serveur démaré au port 8085");
 });
 

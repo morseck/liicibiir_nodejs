@@ -12,7 +12,11 @@ let operationSchema = new mongoose.Schema({
                 type:{
                     numero:String,
                     produit: {
-                        type:[{ nom:String, quantite:Number}]
+                        type:[{
+                            nom:String,
+                            quantite:Number,
+                            calibre: String
+                        }]
                     }
                 }
             }

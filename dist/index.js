@@ -29,6 +29,7 @@ const express_1 = __importDefault(require("express"));
 const bodyParser = __importStar(require("body-parser"));
 const apiRoute_1 = __importDefault(require("./apiRoute"));
 const config_db_mongo_1 = __importDefault(require("./configuration/config.db.mongo"));
+const cors_1 = __importDefault(require("cors"));
 //Appel à la base de données
 config_db_mongo_1.default;
 //Les constantes
@@ -40,13 +41,17 @@ mongoose.connect(uri, (err)=>{
     else console.log("Base de donnée Mongo connectée avec succes");
 });
 */
+const corsOptions = {
+    origin: "*"
+};
 //Les middlewares
 app.use(bodyParser.json());
+app.use(cors_1.default());
 //ROUTES DE TOUS  LES APIS
 app.use('/api/', apiRoute_1.default);
 app.get("/", (req, resp) => {
     resp.send("Hello express Liici Biir");
 });
 app.listen(8085, () => {
-    console.log("serveur démaré");
+    console.log("serveur démaré au port 8085");
 });

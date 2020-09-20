@@ -27,22 +27,6 @@ exports.default = {
             else resp.send(contenurProduit);
         })*/
         for (let item of req.body.produit) {
-            /*asycLab.waterfall([
-                function(done: any){
-                    Produit.findOne({"nom" : item.nom.toString()})
-                        .then(produitFound=>{
-                            done(null, produitFound);
-                        })
-                        .catch(err=>resp.status(500).json({"error":"Impossible de verifier le produit"}
-                        ));
-                },
-                function (produitFound: any, done: any) {
-                    if (produitFound){}
-                    else resp.status(404).json({'error': 'Produit non trouvé'});
-                },
-
-            ]);//fin waterfall
-            */
             produit_model_1.default.findOne({ "nom": item.nom.toString() })
                 .then(result => {
                 if (result)

@@ -12,7 +12,41 @@ exports.default = {
             if (err)
                 resp.status(500).send(err);
             else
-                resp.send(operarions);
+                resp.status(200).send(operarions);
+        });
+    },
+    //listes de nom de produit disponible
+    produitNomDisponible: (req, resp) => {
+        produit_model_1.default.find({ disponible: true }, { nom: 1 }, (err, operarions) => {
+            if (err)
+                resp.status(500).send(err);
+            else
+                resp.status(200).send(operarions);
+        });
+    },
+    //recuperer le nombre total d'operation
+    totalProduit: (req, resp) => {
+        produit_model_1.default.find({}, { _id: 1 }, (err, produit) => {
+            if (err)
+                resp.status(500).send(err);
+            else
+                resp.status(200).send(({ "total": produit.length.toString() }));
+        });
+    },
+    //Regroupement des produit en fonction de leur disponibilite
+    goupeDisponibiliteProduit: (req, resp) => {
+        produit_model_1.default.aggregate([
+            {
+                $group: {
+                    _id: '$disponible',
+                    count: { $sum: 1 }
+                }
+            }
+        ]).exec((err, produit) => {
+            if (err)
+                resp.status(500).send(err);
+            else
+                resp.status(200).send(produit);
         });
     },
     //creer un produit
@@ -22,7 +56,7 @@ exports.default = {
             if (err)
                 resp.status(500).send(err);
             else
-                resp.send(produit);
+                resp.status(200).send(produit);
         });
     },
     //Consulter un produit
@@ -31,16 +65,16 @@ exports.default = {
             if (err)
                 resp.status(500).send(err);
             else
-                resp.send(produit);
+                resp.status(200).send(produit);
         });
     },
     //Mettre à jour un produit
     updateProduit: (req, resp) => {
-        produit_model_1.default.findByIdAndUpdate(req.params.id, req.body, (err) => {
+        produit_model_1.default.findByIdAndUpdate(req.params.id, req.body, (err, produit) => {
             if (err)
                 resp.status(500).send(err);
             else
-                resp.send("produit mis à jour avec succes");
+                resp.status(200).send(produit);
         });
     },
     //Supprimer un produit
@@ -49,7 +83,7 @@ exports.default = {
             if (err)
                 resp.status(500).send(err);
             else
-                resp.send("Produit supprimer avec succes");
+                resp.status(200).send("Produit supprimer avec succes");
         });
     },
     //systeme de pagination des produits

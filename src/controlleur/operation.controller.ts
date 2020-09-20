@@ -1,8 +1,10 @@
 import Operation from '../modele/operation.model';
 import {Request, Response} from "express";
+
 import Conteneur from "../modele/conteneur.model";
-import asyncLab from 'async';
+
 import Produit from "../modele/produit.model";
+
 import {isAwaitExpression} from "@babel/types";
 
 /*
@@ -58,6 +60,152 @@ import {isAwaitExpression} from "@babel/types";
 }*/
 
 
+async function conteneurVerification(item: any) {
+let isAccept: boolean = true;
+   isAccept = await Conteneur.findOne({"numero" : item.numero.toString()})
+        .then(result=>{
+            if (result) {
+                let tabProduit = item.produit || [];
+                for (let itemProduit of tabProduit){
+                    let resultproduit  =  valideProduit(itemProduit.nom.toString())
+                    resultproduit.then(resultProduit=>{
+                        console.log('resultproduit', resultProduit)
+                        if(resultProduit === false){
+                            return isAccept = false;
+                        }
+                    }).catch(err=>{
+                        console.log("errProduit", err)
+                        return isAccept = false
+                    })
+                }//Fin for produit
+                return isAccept
+            }
+            else {
+                console.log('Aucun conteneur trouvé pour numero: '+item.numero.toString());
+                return isAccept = false;
+                //resp.status(404).send("Pas de conteneur numero: "+item.numero.toString());
+            }
+        })
+        .catch(err=> {
+            console.log("Echec erreur "+err);
+            //resp.status(500).send(err);
+            return isAccept = false;
+        });
+
+   return isAccept
+}
+
+
+
+async function valideProduit(nomPorduit: string) {
+    let result: boolean = false;
+    result = await Produit.findOne({"nom": nomPorduit})
+        .wtimeout(2000)
+        .then(resultProduit=>{
+            if (resultProduit){
+                return result = true
+            }else{
+                return result = false
+            }
+        }).catch(err=> {
+        console.log("Echec erreur Produit"+err);
+        return result = false;
+    });
+    return result
+}
+
+
+
+//Methode async pour verifier l'existence d'un produit au niveau de base de donnees
+async function valideProduitOne(nomProduit: string): Promise<any> {
+    //let result: boolean = false;
+    return new Promise((resolve, reject)=>{
+        Produit.findOne({"nom": nomProduit})
+            .then(resultProduit=>{
+                if (resultProduit){
+                    resolve(true)
+                }else{
+                    resolve(false)
+                    stop()
+                }
+            }).catch(err=> {
+            console.log("Echec erreur Conteneur"+err);
+            resolve(false)
+            stop()
+        });
+    })
+
+}
+
+
+//Methode async pour verifier l'existence d'un conteneur au neiveau de la base de donnees
+async function valideConteneurOne(numeroConteneur: string): Promise<any> {
+    let promiseConteneur = new Promise((resolve, reject)=>{
+        Conteneur.findOne({"numero": numeroConteneur})
+            .wtimeout(2000)
+            .then(resultConteneur=>{
+                if (resultConteneur){
+                    resolve(true)
+                }else{
+                    resolve(false)
+                    stop()
+                }
+            }).catch(err=> {
+            console.log("Echec erreur Conteneur"+err);
+            resolve(false)
+            stop()
+        });
+    })
+
+    return promiseConteneur
+}
+
+
+//Methode async qui renvoie un promise resolve==true si tout est ok resolve===false si un produit ou un conteneur n'est pas enregistrer
+async function valideOperation(req: Request): Promise<any>{
+    let tabConteneur = req.body.operation.conteneur;
+    let promise = await new Promise((resolve1, reject1) => {
+        for (let i=0; i < tabConteneur.length; i++) {
+            console.log("i=",i)
+            new Promise((resolve, reject) => {
+                valideConteneurOne( tabConteneur[i].numero.toString()).then(resultConteneur=>{
+                    if (resultConteneur){
+                        let tabProduit = tabConteneur[i].produit;
+                        for(let j = 0; j < tabProduit.length; j++){
+                            new Promise(resolve2 => {
+                                valideProduitOne(tabProduit[j].nom.toString()).then(resultProduit=>{
+                                    if (resultProduit){
+                                        if((i+1 === tabConteneur.length) && (j+1 ===tabProduit.length)) {
+                                            //resolve2(true)
+                                            //resolve(true);
+                                            resolve1(true);
+
+                                        }
+                                    }
+                                    else {//resolve2(true);resolve(false);
+                                    resolve1(false);
+                                        stop()}
+                                })
+                            })
+                        }
+                    }
+                    else{resolve(false); resolve1(false);
+                    stop()}
+                })
+            }).catch((error)=>{
+                console.log(error)
+                resolve1(false);
+            });
+
+        }//Fin boucle for conteneur
+    })
+    return promise;
+    //return
+}
+
+
+
+
 
 export default {
 
@@ -65,124 +213,76 @@ export default {
     indexOperation: (req:Request, resp: Response)=>{
         Operation.find((err, operations)=>{
             if (err)  resp.status(500).send(err);
-            else  resp.send(operations);
+            else  resp.status(200).send(operations);
+        });
+    },
+
+    //Liste de toutes les operations contenant specifique _id, created_at et mode_operation
+    indexHistoriqueOperationAll: (req:Request, resp: Response)=>{
+        Operation.find({},{created_at:1, mode_operation:1},(err, operations)=>{
+            if (err)  resp.status(500).send(err);
+            else  resp.status(200).send(operations);
+        });
+    },
+
+    //recuperer le nombre total d'operation
+    totalOperation: (req:Request, resp: Response)=>{
+        Operation.find({}, {_id: 1},(err, operation)=>{
+            if (err)  resp.status(500).send(err);
+            else resp.status(200).send(({"total": operation.length.toString()}));
         });
     },
 
     //Listes les opération rentrante
-    indexOperationRentrante: (req:Request, resp: Response)=>{
-        Operation.find({"mode_operation": true},(err, operations)=>{
+    indexOperationEntrante: (req:Request, resp: Response)=>{
+        Operation.find({"mode_operation": true},{created_at: 1, mode_operation: 1},(err, operations)=>{
             if (err)  resp.status(500).send(err);
-            else  resp.send(operations);
+            else  resp.status(200).send(operations);
         });
     },
 
     //Listes les opérations sortantes
     indexOperationSortante: (req:Request, resp: Response)=>{
-        Operation.find({"mode_operation": false},(err, operations)=>{
+        Operation.find({"mode_operation": false},{created_at: 1, mode_operation: 1},(err, operations)=>{
             if (err)  resp.status(500).send(err);
-            else  resp.send(operations);
+            else  resp.status(200).send(operations);
         });
     },
 
-    //Faire ou poster une opération
-createOperation: (req:Request, resp: Response)=>{
-        let modeOperation: Boolean = req.body.mode_operation;
-        //let nombreConteneur: Number = req.body.operation.conteneur.length.toString() || 0;
-        let tabConteneur = req.body.operation.conteneur || [];
-        let nombreConteneur: number = parseInt(tabConteneur.length.toString());
-        //taille = taille-1;
-        console.log("nombreConteneur="+nombreConteneur);
-        //Verification existantance des conteneurs
-
-    let indexConteneur : number= 0;
-    let isSucces = false;
-
-        if (modeOperation == true){
-            //operation entrante
-            for(let item of tabConteneur){
-                //let indexProduit: number = 0;
-
-                //Methode verifier l'existance du conteneur
-                 Conteneur.findOne({"numero" : item.numero.toString()})
-                    .then(result=>{
-                        if (result) {
-                            console.log("Document retrouvé avec succees: "+item.numero.toString());
-                           // console.log("tabproduit="+tabProduit.length.toString());
-                            let indexProduit : number= 0;
-                            let tabProduit = item.produit || [];
-                            for (let itemProduit of tabProduit){
-                                Produit.findOne({"nom": itemProduit.nom.toString()})
-                                    .wtimeout(2000)
-                                    .then(resultProduit=>{
-                                        if (resultProduit){
-                                            console.log("indexConteneur="+indexConteneur);
-                                            console.log("indexProduit="+tabProduit.toString());
-                                            isSucces = true;
-                                            if ((indexConteneur==nombreConteneur )){
-                                                let indexProduitCurrent: number= parseInt(item.produit.length.toString());
-                                                if ((indexProduit == tabProduit.length)){
-                               //                     resp.status(200).send('okkkkk');
-                                                    console.log("object1="+resultProduit.toObject().nom.toString());
-                                                    console.log("object2="+itemProduit.nom.toString());
-                                                }
-                                            }
-                                        }else{
-                                            resp.status(404).send('pas de produit correspondant');
-                                        }
-                                    }).catch(err=> {
-                                    console.log("Echec erreur Produit"+err);
-                                    resp.status(500).send(err);
-                                });
-                                indexProduit++;
-                            }//Fin for produit
-                            console.log('conteneur produit final='+isSucces);
-
-                        }
-                        else {
-                            console.log('Aucun conteneur trouvé pour numero: '+item.numero.toString());
-                            resp.status(404).send("Pas de conteneur numero: "+item.numero.toString());
-                        }
-                    })
-                    .catch(err=> {
-                        console.log("Echec erreur "+err);
-                        resp.status(500).send(err);
+    //Methode pour creer par post une operation entrante
+    createOperationEntrante:(req: Request, resp: Response)=>{
+        let mode_opereation = req.body.mode_operation === true ? true : req.body.mode_operation.toString() === 'entrante' ? true : false;
+        if (mode_opereation){
+            valideOperation(req).then(resul=>{
+                if (resul===true) {
+                    let operation = new Operation(req.body);
+                    operation.save(err=>{
+                        if(err) resp.status(500).send(err);
+                        else resp.status(200).send(operation);
                     });
-                indexConteneur++;
-            }//Fin boucle for conteneur
-            /*let testt = await createForm(req);
-            resp.send(testt);
-            console.log("testt="+testt);*/
-
+                }
+                else  resp.status(500).send('Operation non valide, verifiez les conteneurs et les produits')
+            })
+        }else{
+            resp.status(500).send('Seules les operations entrantes sont autorisées dans cette partie')
         }
-        else if(modeOperation == false){ //operation sortante
 
-        }
-        else{}
-
-
-    //!conteneurExist ? resp.send('En dehors boucle for '+conteneurExist): resp.send('En dehors boucle for '+ conteneurExist) ;
-    //resp.send(req.body.operation.conteneur.length.toString());
-    /*let operation = new Operation(req.body);
-    operation.save(err=>{
-            if(err) resp.status(500).send(err);
-            else resp.send(operation);
-        })*/
+        //return
     },
 
     //Consulter une opérations
     showOperation: (req: Request, resp: Response)=>{
         Operation.findById(req.params.id, (err, operation)=>{
             if (err) resp.status(500).send(err);
-            else resp.send(operation);
+            else resp.status(200).send(operation);
         });
     },
 
     //Mettre à jour une operation
     updateOperation: (req: Request, resp: Response)=>{
-        Operation.findByIdAndUpdate(req.params.id,req.body, (err)=>{
+        Operation.findByIdAndUpdate(req.params.id,req.body, (err, operation)=>{
             if (err) resp.status(500).send(err);
-            else resp.send("Opération mise à jour avec succes");
+            else resp.status(200).send(operation);
         });
     },
 
@@ -190,7 +290,7 @@ createOperation: (req:Request, resp: Response)=>{
     deleteOperation: (req: Request, resp: Response)=>{
         Operation.findByIdAndDelete(req.params.id,(err)=>{
             if (err) resp.status(500).send(err);
-            else resp.send("Operation supprimer avec succes");
+            else resp.status(200).send("Operation supprimer avec succes");
         });
     },
 
@@ -204,7 +304,7 @@ createOperation: (req:Request, resp: Response)=>{
         //resp.send("Conteneur");
         Operation.paginate({},{page: p, limit: size}, (err, result)=>{
             if (err) resp.status(500).send(err);
-            else resp.send(result);
+            else resp.status(200).send(result);
         });
     },
 
@@ -223,7 +323,7 @@ createOperation: (req:Request, resp: Response)=>{
         //resp.send("Conteneur");
         Operation.paginate({created_at: keyword},{page: p, limit: size}, (err, result)=>{
             if (err) resp.status(500).send(err);
-            else resp.send(result);
+            else resp.status(200).send(result);
         });
     }
 }
